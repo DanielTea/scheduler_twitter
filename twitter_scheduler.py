@@ -48,7 +48,7 @@ if st.button("Save API Data"):
         'access_token': access_token,
         'access_token_secret': access_token_secret
     }).execute()
-    if response.error:
+    if response != None:
         st.write(f"Error saving API data: {response.error}")
     else:
         st.write(f"Your API data has been saved with UUID: {unique_id}")
