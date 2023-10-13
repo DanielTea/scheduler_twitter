@@ -68,10 +68,26 @@ if st.button("Load API Data"):
 # Dynamic input fields for chunks
 num_of_chunks = st.number_input("Number of Tweet Chunks", min_value=1, max_value=25, step=1)
 chunks = []
+
 for i in range(num_of_chunks):
     chunk = st.text_area(f"Tweet Chunk {i+1}", key=f"chunk_{i}")
+    
+    # Check if chunk exceeds the 280 characters limit
+    if len(chunk) > 280:
+        # Split chunk by \n\n
+        sub_chunks = chunk.split("\n\n")
+        
+        # Check each sub_chunk's length
+        for sub_chunk in sub_chunks:
+            if len(sub_chunk) <= 280:
+                chunks.append(sub_chunk)
+            else:
+                st.warning(f"Chunk {i+1} contains a section that's too long! Please break it down further.")
+                break
+    else:
+        chunks.append(chunk)
+    
     st.write(f"Character count: {len(chunk)}")
-    chunks.append(chunk)
 
 # Image upload
 image = st.file_uploader("Upload an image", type=['png', 'jpg', 'jpeg'])
@@ -161,6 +177,11 @@ input_uuid = st.text_input("Enter UUID to view scheduled tweets:")
 
 if input_uuid:
     response = supabase.table('tweets').select("*").eq('uuid', input_uuid).execute()
+    if response.data:
+        scheduled_tweets = sorted(response.data, key=lambda x: x['scheduled_time'])
+    else:
+        scheduled_tweets = []
+
     scheduled_tweets = response.data
 
     # Display each scheduled tweet in a container
